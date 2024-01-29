@@ -2,6 +2,9 @@
 data
 weight
 
+# python
+*.pyc
+
 
 # 以下是引用其他作者代码中的.gitignore
 # Byte-compiled / optimized / DLL files
@@ -133,3 +136,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+src/tool/__pycache__/train.cpython-37.pyc
+src/model/__pycache__/cnn_modle.cpython-37.pyc

@@ -37,10 +37,6 @@ data_transforms = {
 
 image_datasets = create_dataset(directory, cls_index_dic, ratio, data_transforms)
 
-# image_datasets = {x: datasets.ImageFolder(os.path.join(directory, x),
-#                                           data_transforms[x])
-#                   for x in ['train', 'val']}
-
 data_loaders = {x: data.DataLoader(image_datasets[x], batch_size=8, shuffle=True, num_workers=num_workers[x])
                 for x in ['train', 'val', 'test']}
 

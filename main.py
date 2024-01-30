@@ -9,6 +9,10 @@ import torchvision.models as models
 from src.tool import train,test
 from src.model import cnn_modle
 from src.tool.data import *
+from torch.hub import load_state_dict_from_url as load_url 
+import os
+os.environ['TORCH_HOME']='/home/qiangyu/cls/pretrained'
+
 
 directory = 'data/imagenet'
 num_workers = {'train': 8, 'val': 1, 'test': 0}

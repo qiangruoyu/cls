@@ -1,6 +1,7 @@
 # 忽略data和images文件夹
 data
 weight
+pretrained
 
 # python
 *.pyc

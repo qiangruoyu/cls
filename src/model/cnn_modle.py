@@ -5,6 +5,8 @@ from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 from torchvision.models import swin_v2_b, Swin_V2_B_Weights, densenet201, DenseNet201_Weights
 from torchvision.models import convnext_base,ConvNeXt_Base_Weights, vit_b_32, ViT_B_32_Weights
 import torch.nn.functional as F
+import os
+os.environ['TORCH_HOME']='/home/qiangyu/cls/pretrained'
 
 class restnet18_cls2(nn.Module):
     """

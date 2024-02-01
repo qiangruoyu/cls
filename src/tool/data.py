@@ -64,8 +64,11 @@ class MyDataset(Dataset): # 继承Dataset类
     def __len__(self):
         return len(self.datasets)   # 返回图片的长度
     
-    def shuffle_load(self,num):
-        self.datasets = random.choices(self.datasets_list, weights=self.weight_list,k=num)
+    def shuffle_load(self,num=None):
+        if num:
+            self.datasets = random.choices(self.datasets_list, weights=self.weight_list,k=num)
+        else:
+            self.datasets = random.choices(self.datasets_list, weights=self.weight_list,k=len(self.datasets))
 
 
 def create_dataset(directory, cls_index_dic, ratio, transform):

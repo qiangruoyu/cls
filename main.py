@@ -7,7 +7,7 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 import torchvision.models as models
 from src.tool import train,test
-from src.model import cnn_modle
+from model import modle
 from src.tool.data import *
 from torch.hub import load_state_dict_from_url as load_url 
 import os
@@ -47,7 +47,7 @@ data_loaders = {x: data.DataLoader(image_datasets[x], batch_size=8, shuffle=True
 dataset_sizes = {x: len(image_datasets[x])
                  for x in ['train', 'val', 'test']}
 
-model = cnn_modle.restnet18_cls2(True)
+model = modle.restnet18_cls2(True)
 
 # FineTune it
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

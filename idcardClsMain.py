@@ -11,9 +11,9 @@ from model import modle
 from src.tool.data import *
 from torch.hub import load_state_dict_from_url as load_url 
 import os
+
+
 os.environ['TORCH_HOME']='/home/qiangyu/cls/pretrained'
-
-
 directory = 'data/imagenet'
 num_workers = {'train': 8, 'val': 1, 'test': 0}
 cls_index_dic = {"ants":0,"bees":1}
@@ -38,7 +38,7 @@ data_transforms = {
     ])
 }
 
-
+# 数据预处理
 image_datasets = create_dataset(directory, cls_index_dic, ratio, data_transforms)
 
 data_loaders = {x: data.DataLoader(image_datasets[x], batch_size=8, shuffle=True, num_workers=num_workers[x])

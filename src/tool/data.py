@@ -35,10 +35,24 @@ def split_sets(file_list, ratio):
     return datasets
 
 class MyDataset(Dataset): # 继承Dataset类
-    def __init__(self, dataset, transform, demand): # 定义txt_path参数
+    def __init__(self, dataset, transform, demand, num = 0): # 定义txt_path参数
         self.datasets = dataset
         self.transform = transform
         self.demand = demand
+        self.datasets_list = dataset
+        self.weight_list = []
+        # 初始化权重list
+        cls_num_dic = {}
+        for data in self.datasets_list:
+            if data[1] in cls_num_dic.keys():
+                cls_num_dic[data[1]] += 1
+            else:
+                cls_num_dic[data[1]] = 1
+        cls_num_weight = 1/sum([1 for key in cls_num_dic.keys()])
+        for data in self.datasets_list:
+            self.weight_list.append(cls_num_weight*(1/cls_num_dic[data[1]]))
+        if num != 0:
+            self.shuffle_load(num)
 
     def __getitem__(self, index):
         file_path, label = self.datasets[index]
@@ -49,6 +63,9 @@ class MyDataset(Dataset): # 继承Dataset类
 
     def __len__(self):
         return len(self.datasets)   # 返回图片的长度
+    
+    def shuffle_load(self,num):
+        self.datasets = random.choices(self.datasets_list, weights=self.weight_list,k=num)
 
 
 def create_dataset(directory, cls_index_dic, ratio, transform):

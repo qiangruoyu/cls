@@ -76,11 +76,6 @@ def create_dataset(directory, cls_index_dic, ratio, transform):
     datasets = split_sets(file_paths, ratio)
     return {demand:MyDataset(datasets[demand], transform[demand], demand) for demand in ratio.keys()}
 
-    
-
-
-
-
 
 
 if __name__ == "__main__":

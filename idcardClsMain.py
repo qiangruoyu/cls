@@ -59,7 +59,7 @@ optimazer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 #train
 num_epochs = 10
-train.train_model(path_save_model='weight', model=model, data_loaders=data_loaders, dataset_sizes=dataset_sizes,
-             optimizer=optimazer, criterion=criterion, num_epochs=num_epochs)
+train.train_model(model_name='weight', model=model, data_loaders=data_loaders, dataset_sizes=dataset_sizes,
+             optimizer=optimazer, criterion=criterion, device=device, num_epochs=num_epochs)
 
 

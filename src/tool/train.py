@@ -5,11 +5,11 @@ import copy
 import time
 from livelossplot import PlotLosses
 
-def train_model(path_save_model, model, data_loaders, dataset_sizes, optimizer, criterion, num_epochs=5, scheduler=None):
-    if not os.path.exists('weight' + str(path_save_model)):
-        os.mkdir('weight' + str(path_save_model))
+def train_model(model_name, model, data_loaders, dataset_sizes, optimizer, criterion, device, num_epochs=5, scheduler=None):
+    if not os.path.exists('weight'):
+        os.mkdir('weight')
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     time_start_train = time.time()
 
     live_loss = PlotLosses()
@@ -87,8 +87,8 @@ def train_model(path_save_model, model, data_loaders, dataset_sizes, optimizer, 
         print('Train Loss: {:.4f} Acc: {:.4f}'.format(train_loss, train_acc))
         print('Val Loss: {:.4f} Acc: {:.4f}'.format(val_loss, val_acc))
         print()
-        torch.save(model.state_dict(), './' +
-                   str(path_save_model) + '/model_{}_epoch.pt'.format(epoch+1))
+        torch.save(model.state_dict(), 'weight/' +
+                   str(model_name) + '/model_{}_{}_epoch.pt'.format(epoch+1,val_loss))
 
     time_elapsed = time.time() - time_start_train
     print('Training complete in {:.0f}m {:.0f}s'.format(

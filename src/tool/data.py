@@ -3,6 +3,7 @@ import random
 import math
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
 
 def get_all_file_paths(directory, cls_index_dic): 
     file_paths = []  # 存储所有文件的路径  
@@ -35,12 +36,13 @@ def split_sets(file_list, ratio):
     return datasets
 
 class MyDataset(Dataset): # 继承Dataset类
-    def __init__(self, dataset, transform, demand, num = 0): # 定义txt_path参数
+    def __init__(self, dataset, transform, demand, num = 0,shape=[224,224]): # 定义txt_path参数
         self.datasets = dataset
         self.transform = transform
         self.demand = demand
         self.datasets_list = dataset
         self.weight_list = []
+        self.shape = shape
         # 初始化权重list
         cls_num_dic = {}
         for data in self.datasets_list:
@@ -56,9 +58,11 @@ class MyDataset(Dataset): # 继承Dataset类
 
     def __getitem__(self, index):
         file_path, label = self.datasets[index]
-        img = Image.open(file_path).resize((224, 224), resample=Image.BILINEAR).convert('RGB')     # 像素值 0~255，在transfrom.totensor会除以255，使像素值变成 0~1   参考：https://blog.csdn.net/icamera0/article/details/50843172
+        img = Image.open(file_path).convert('RGB')     # 像素值 0~255，在transfrom.totensor会除以255，使像素值变成 0~1   参考：https://blog.csdn.net/icamera0/article/details/50843172
         if self.transform is not None:
             img = self.transform(img)   # 在这里做transform，转为tensor等等
+        img = self.maxLenPad(img)
+        img = transforms.Resize(self.shape,antialias=True)(img)
         return img, label
 
     def __len__(self):
@@ -70,11 +74,36 @@ class MyDataset(Dataset): # 继承Dataset类
         else:
             self.datasets = random.choices(self.datasets_list, weights=self.weight_list,k=len(self.datasets))
 
+    def maxLenPad(self,img):
+        # 找到长边
+        height, width = img.shape[1], img.shape[2]
+        maxlen = max([width,height])
+
+        # 对width pad
+        if width < maxlen:
+            # 计算上下需要pad的数量，padding
+            value = maxlen-width
+            left = value/2 if value%2==0 else value//2
+            right = value/2 if value%2==0 else value//2
+            img = transforms.Pad([int(left),0,int(right),0],0,padding_mode="constant")(img)
+
+        # 对height pad
+        if height < maxlen:
+            # 计算上下需要pad的数量，padding
+            value = maxlen - height
+            up = value/2 if value%2==0 else value//2
+            down = value/2 if value%2==0 else value//2
+            img = transforms.Pad([0,int(up),0,int(down)],0,padding_mode="constant")(img)
+        
+        return img
+
 
 def create_dataset(directory, cls_index_dic, ratio, transform):
     file_paths = get_all_file_paths(directory, cls_index_dic)
     datasets = split_sets(file_paths, ratio)
     return {demand:MyDataset(datasets[demand], transform[demand], demand) for demand in ratio.keys()}
+
+
 
 
 

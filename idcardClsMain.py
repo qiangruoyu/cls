@@ -7,12 +7,14 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 import torchvision.models as models
 from src.tool import train,test
-from model import modle
+from src.model import modle
 from src.tool.data import *
 from torch.hub import load_state_dict_from_url as load_url 
 import os
+from src.tool.test import *
+import pickle
 
-
+# 参数配置
 os.environ['TORCH_HOME']='/home/qiangyu/cls/pretrained'
 directory = 'data/imagenet'
 num_workers = {'train': 8, 'val': 1, 'test': 0}
@@ -22,6 +24,7 @@ data_transforms = {
     'train': transforms.Compose([
         transforms.RandomRotation(20),
         transforms.RandomHorizontalFlip(0.5),
+        transforms.ColorJitter(brightness=0.5,contrast=0.5,saturation=0.5,hue=0.5),
         transforms.ToTensor(),
         transforms.Normalize([0.4802, 0.4481, 0.3975],
                              [0.2302, 0.2265, 0.2262]),
@@ -38,6 +41,21 @@ data_transforms = {
     ])
 }
 
+
+
+# 硬件选择
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+# FineTune it
+model = modle.restnet18_cls2(True)
+model = model.to(device)
+
+# Loss
+criterion = nn.CrossEntropyLoss()
+
+
+
+#train
 # 数据预处理
 image_datasets = create_dataset(directory, cls_index_dic, ratio, data_transforms)
 
@@ -47,19 +65,24 @@ data_loaders = {x: data.DataLoader(image_datasets[x], batch_size=8, shuffle=True
 dataset_sizes = {x: len(image_datasets[x])
                  for x in ['train', 'val', 'test']}
 
-model = modle.restnet18_cls2(True)
+with open(os.path.join("data","imagenet.pkl"), "wb") as file: # 数据集信息持久化,以便之后测试
+    # 使用pickle的dump()函数将变量写入文件
+    pickle.dump([image_datasets,data_loaders], file)
 
-# FineTune it
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model = model.to(device)
+optimazer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9) # 优化器
 
-# Loss
-criterion = nn.CrossEntropyLoss()
-optimazer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+num_epochs = 5
 
-#train
-num_epochs = 10
-train.train_model(model_name='weight', model=model, data_loaders=data_loaders, dataset_sizes=dataset_sizes,
+train.train_model(model_name=type(model).__name__, model=model, data_loaders=data_loaders, dataset_sizes=dataset_sizes,
              optimizer=optimazer, criterion=criterion, device=device, num_epochs=num_epochs)
+
+# # test 
+# best_model_wts = ""
+# model.load_state_dict(best_model_wts)
+# # 读取数据集划分
+# with open("data/imagenet.pkl", "rb") as file:
+#     # 使用pickle的load()函数加载文件内容
+#     [image_datasets,data_loaders] = pickle.load(file)
+# test_model(type(model).__name__, model, data_loaders, dataset_sizes, criterion, device, optimazer, phases=['test'])
 
 

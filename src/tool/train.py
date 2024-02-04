@@ -3,20 +3,22 @@ import os
 import sys
 import copy
 import time
-from livelossplot import PlotLosses
+import matplotlib.pyplot as plt 
+import numpy as np
+from src.tool.test import *
 
 def train_model(model_name, model, data_loaders, dataset_sizes, optimizer, criterion, device, num_epochs=5, scheduler=None):
     if not os.path.exists('weight'):
         os.mkdir('weight')
+    if not os.path.exists('metrics'):
+        os.mkdir('metrics')
 
     # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     time_start_train = time.time()
-
-    live_loss = PlotLosses()
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
     best = 0
-
+    train_losses,train_acces,eval_losses,eval_acces = [],[],[],[]
     for epoch in range(num_epochs):
         print(f'Epoch {epoch + 1}/{num_epochs}')
         print('-' * 10)
@@ -28,7 +30,6 @@ def train_model(model_name, model, data_loaders, dataset_sizes, optimizer, crite
                 model.train()
             else:
                 model.eval()
-
             running_loss = 0.0
             running_corrects = 0
 
@@ -76,22 +77,42 @@ def train_model(model_name, model, data_loaders, dataset_sizes, optimizer, crite
                 best = epoch + 1
                 best_model_wts = copy.deepcopy(model.state_dict())
 
-        live_loss.update({
-            'log loss': train_loss,
-            'val_log loss': val_loss,
-            'accuracy': train_acc,
-            'val_accuracy': val_acc
-        })
+        train_losses.append(train_loss)
+        train_acces.append(train_acc)
+        eval_losses.append(val_loss)
+        eval_acces.append(val_acc)
 
-        live_loss.draw()
+
         print('Train Loss: {:.4f} Acc: {:.4f}'.format(train_loss, train_acc))
         print('Val Loss: {:.4f} Acc: {:.4f}'.format(val_loss, val_acc))
         print()
+        
         torch.save(model.state_dict(), 'weight/' +
-                   str(model_name) + '/model_{}_{}_epoch.pt'.format(epoch+1,val_loss))
+                   str(model_name) + '_model_{}_{}_epoch.pt'.format(epoch+1,val_loss))
 
     time_elapsed = time.time() - time_start_train
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
     print('Best Validation Accuracy: {}, Epoch: {}'.format(best_acc, best))
+    draw_loss_acc(train_losses,train_acces,eval_losses,eval_acces,path="metrics",model_name=model_name)
+    model.load_state_dict(best_model_wts)
+    print()
+    test_model(model_name, model, data_loaders, dataset_sizes, criterion, device, optimizer, phases=['test'])
+
+
+
+    
+def draw_loss_acc(train_losses,train_acces,eval_losses,eval_acces,path="metrics",model_name="cnn"):
+
+    #绘图代码
+    plt.plot(np.arange(len(train_losses)), train_losses,label="train loss")
+    plt.plot(np.arange(len(train_acces)), train_acces, label="train acc")
+    plt.plot(np.arange(len(eval_losses)), eval_losses, label="valid loss")
+    plt.plot(np.arange(len(eval_acces)), eval_acces, label="valid acc")
+    plt.legend() #显示图例
+    plt.xlabel('epoches')
+    plt.title('Model accuracy&loss')
+    # plt.show()
+    plt.savefig(os.path.join(path,model_name+".png"))
+
 

@@ -13,7 +13,10 @@ def get_size(directory_list):
             shape = list(Image.open(file_path).size)
             shape_list.append(shape)
     kmeans = KMeans(n_clusters=3, random_state=0, n_init=10).fit(shape_list)
-    return kmeans.cluster_centers_
+    labels = kmeans.labels_
+    cluster_counts = np.bincount(labels)
+    print("每个簇中的点数：", cluster_counts)
+    return kmeans.cluster_centers_, cluster_counts
 
     
 if __name__ == "__main__":

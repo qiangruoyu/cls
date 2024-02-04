@@ -4,9 +4,10 @@ import sys
 import time
 
 
-def test_model(model, data_loaders, dataset_sizes, criterion, optimizer, phases=['val']):
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+def test_model(model_name, model, data_loaders, dataset_sizes, criterion, device, optimizer, phases=['test']):
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     time_start = time.time()
+    epoch_acc,epoch_acc = None,None
     for phase in phases:
 
         model.eval()
@@ -28,7 +29,7 @@ def test_model(model, data_loaders, dataset_sizes, criterion, optimizer, phases=
             running_loss += loss.item() * inputs.size(0)
             running_corrects += torch.sum(preds == labels.data)
 
-            print("\rIteration: {}/{}, Loss: {}.".format(i + 1, len(data_loaders[phase]), loss.item() * inputs.size(0)),
+            print("Iteration: {}/{}, Loss: {}.".format(i + 1, len(data_loaders[phase]), loss.item() * inputs.size(0)),
                   end="")
             # sys.stdout.flush()
 
@@ -47,3 +48,8 @@ def test_model(model, data_loaders, dataset_sizes, criterion, optimizer, phases=
     time_elapsed = time.time() - time_start
     print('Test complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
+    
+    torch.save(model.state_dict(), 'weight/' +
+                   str(model_name) + '_test_{}_{}.pt'.format(epoch_acc,epoch_loss))
+    
+

@@ -41,7 +41,9 @@ data_transforms = {
     ])
 }
 
-
+# 数据集
+data_pkl = None
+# data_pkl = directory + ".pkl"
 
 # 硬件选择
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -55,24 +57,28 @@ criterion = nn.CrossEntropyLoss()
 
 
 
+
 #train
 # 数据预处理
-image_datasets = create_dataset(directory, cls_index_dic, ratio, data_transforms)
+if not data_pkl:
+    image_datasets = create_dataset(directory, cls_index_dic, ratio, data_transforms)
 
-data_loaders = {x: data.DataLoader(image_datasets[x], batch_size=8, shuffle=True, num_workers=num_workers[x])
-                for x in ['train', 'val', 'test']}
-
-dataset_sizes = {x: len(image_datasets[x])
-                 for x in ['train', 'val', 'test']}
-
-with open(os.path.join("data","imagenet.pkl"), "wb") as file: # 数据集信息持久化,以便之后测试
-    # 使用pickle的dump()函数将变量写入文件
-    pickle.dump([image_datasets,data_loaders], file)
-
+    data_loaders = {x: data.DataLoader(image_datasets[x], batch_size=8, shuffle=True, num_workers=num_workers[x])
+                    for x in ['train', 'val', 'test']}
+    
+    dataset_sizes = {x: len(image_datasets[x])
+                    for x in ['train', 'val', 'test']}
+    
+    with open(os.path.join("data","imagenet.pkl"), "wb") as file: # 数据集信息持久化,以便之后测试
+        # 使用pickle的dump()函数将变量写入文件
+        pickle.dump([image_datasets,data_loaders], file)
+else:
+    # # 读取数据集划分
+    with open("data/imagenet.pkl", "rb") as file:
+        # 使用pickle的load()函数加载文件内容
+        [image_datasets,data_loaders,dataset_sizes] = pickle.load(file)
 optimazer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9) # 优化器
-
 num_epochs = 5
-
 train.train_model(model_name=type(model).__name__, model=model, data_loaders=data_loaders, dataset_sizes=dataset_sizes,
              optimizer=optimazer, criterion=criterion, device=device, num_epochs=num_epochs)
 
@@ -82,7 +88,7 @@ train.train_model(model_name=type(model).__name__, model=model, data_loaders=dat
 # # 读取数据集划分
 # with open("data/imagenet.pkl", "rb") as file:
 #     # 使用pickle的load()函数加载文件内容
-#     [image_datasets,data_loaders] = pickle.load(file)
+#     [image_datasets,data_loaders,dataset_sizes] = pickle.load(file)
 # test_model(type(model).__name__, model, data_loaders, dataset_sizes, criterion, device, optimazer, phases=['test'])
 
 

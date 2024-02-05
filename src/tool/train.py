@@ -78,9 +78,9 @@ def train_model(model_name, model, data_loaders, dataset_sizes, optimizer, crite
                 best_model_wts = copy.deepcopy(model.state_dict())
 
         train_losses.append(train_loss)
-        train_acces.append(train_acc)
+        train_acces.append(train_acc.cpu())
         eval_losses.append(val_loss)
-        eval_acces.append(val_acc)
+        eval_acces.append(val_acc.cpu())
 
 
         print('Train Loss: {:.4f} Acc: {:.4f}'.format(train_loss, train_acc))
@@ -88,7 +88,7 @@ def train_model(model_name, model, data_loaders, dataset_sizes, optimizer, crite
         print()
         
         torch.save(model.state_dict(), 'weight/' +
-                   str(model_name) + '_model_{}_{}_epoch.pt'.format(epoch+1,val_loss))
+                   str(model_name) + '_model_{}_{}_epoch.pt'.format(val_acc,epoch+1))
 
     time_elapsed = time.time() - time_start_train
     print('Training complete in {:.0f}m {:.0f}s'.format(

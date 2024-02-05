@@ -55,9 +55,6 @@ model = model.to(device)
 # Loss
 criterion = nn.CrossEntropyLoss()
 
-
-
-
 #train
 # 数据预处理
 if not data_pkl:
@@ -71,7 +68,7 @@ if not data_pkl:
     
     with open(os.path.join("data","imagenet.pkl"), "wb") as file: # 数据集信息持久化,以便之后测试
         # 使用pickle的dump()函数将变量写入文件
-        pickle.dump([image_datasets,data_loaders], file)
+        pickle.dump([image_datasets,data_loaders,dataset_sizes], file)
 else:
     # # 读取数据集划分
     with open("data/imagenet.pkl", "rb") as file:

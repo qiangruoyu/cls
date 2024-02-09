@@ -89,3 +89,6 @@ train.train_model(model_name=type(model).__name__, model=model, data_loaders=dat
 # test_model(type(model).__name__, model, data_loaders, dataset_sizes, criterion, device, optimazer, phases=['test'])
 
 
+# 将 PyTorch 模型转换为 ONNX 格式
+output_file = "resnet18.onnx"
+torch.onnx.export(model, x.to(device), output_file, export_params=True)

@@ -1,0 +1,8 @@
+# 利用docker启动triton server 命令
+docker run --rm -p8000:8000 -p8001:8001 -p8002:8002 -v /home/qiangyu/cls/model_repository/:/models \
+nvcr.io/nvidia/tritonserver:21.02-py3 \
+tritonserver --model-repository=/models 
+
+# 利用docker启动triton server 命令二，设置了网络和名称
+docker run --rm --name yyzz_triton --network yyzh_cls_net -p8000:8000 -p8001:8001 -p8002:8002 \
+-v /home/qiangyu/cls/model_repository/:/models \nvcr.io/nvidia/tritonserver:21.02-py3 \tritonserver --model-repository=/models

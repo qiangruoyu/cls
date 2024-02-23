@@ -1,0 +1,11 @@
+# 打包镜像命令
+docker build -t tornado:v1 .
+# 启动docker 镜像
+docker run -it tornado:v1 /bin/bash
+
+# 利用docker启动triton server 命令
+docker run --rm -p9998:9998 -v /home/qiangyu/cls/:/home tornado:v1
+
+
+# 利用docker启动triton server 命令 添加了网络和名称
+docker run --rm --name yyzz_tornado --network yyzh_cls_net -p9998:9998 -v /home/qiangyu/cls/:/home tornado:v1

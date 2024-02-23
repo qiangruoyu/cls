@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 部署名字
+  name: yyzz_deploy
+spec:
+  replicas: 1
+  # 用来查找关联的 Pod，所有标签都匹配才行
+  selector:
+    matchLabels:
+      app: yyzz_deploy
+  # 定义 Pod 相关数据
+  template:
+    metadata:
+      labels:
+        app: yyzz_deploy
+    spec:
+      # 定义容器，可以多个
+      containers:
+      - name: yyzz-triton # 容器名字
+        image: nvcr.io/nvidia/tritonserver:21.02-py3 # 镜像
+        imagePullPolicy: IfNotPresent
+        ports:  
+        - containerPort: 8000  
+        volumeMounts:  
+        - name: app-data  
+          mountPath: /home/qiangyu/cls/  
+
+      - name: yyzz-tornado # 容器名字
+        image: tornado:v1 # 镜像
+        imagePullPolicy: IfNotPresent
+        ports:  
+        - containerPort: 9998  
+        volumeMounts:  
+        - name: app-data  
+          mountPath: /home/qiangyu/cls/ 
+
+    volumes:  
+    - name: app-data  
+      hostPath:  
+        path: /home/qiangyu/cls/ # 替换为你想要挂载的宿主机路径

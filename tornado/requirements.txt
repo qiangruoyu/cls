@@ -1,0 +1,9 @@
+tornado==6.2
+tritonclient==2.42.0
+requests==2.31.0
+torchvision==0.14.1
+Pillow==8.1.2
+gevent==22.10.2
+geventhttpclient==2.0.11
+scikit-learn==1.0.2
+aiohttp==3.8.6

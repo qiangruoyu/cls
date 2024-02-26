@@ -97,7 +97,6 @@ async def async_cls_process(imgbase64, model_name = "resnet_50",shape = (224,224
 
 
 
-
 if __name__ == "__main__":
 
 

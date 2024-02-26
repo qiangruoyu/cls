@@ -18,7 +18,7 @@ def tornado_request(data,url='http://localhost:9998/cls',headeers={'Content-Type
     # 打印响应内容  
     return response
 
-async def send_request(request_num, data="demo",url='http://127.0.0.1:9998/cls',headeers={'Content-Type': 'application/json'}):
+async def send_request(request_num, data="demo",url='http://127.0.0.1:31998/cls',headeers={'Content-Type': 'application/json'}):
     async with aiohttp.ClientSession() as session:
         print(str(request_num) + "begin")
         # 准备要发送的数据，这里是一个简单的 JSON 字符串  

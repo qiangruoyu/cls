@@ -1,19 +1,97 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yyzz-cls-tornado
+spec:
+  selector:
+    app: yyzz-cls-tornado
+  # 默认 ClusterIP 集群内可访问，NodePort 节点可访问，LoadBalancer 负载均衡模式（需要负载均衡器才可用）
+  type: NodePort
+  ports:
+    - port: 9998        # 本 Service 的端口
+      targetPort: 9998  # 容器端口
+      nodePort: 31998   # 节点端口，范围固定 30000 ~ 32767
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   # 部署名字
-  name: yyzz_deploy
+  name: yyzz-cls-tornado-deploy
 spec:
   replicas: 1
   # 用来查找关联的 Pod，所有标签都匹配才行
   selector:
     matchLabels:
-      app: yyzz_deploy
+      app: yyzz-cls-tornado
   # 定义 Pod 相关数据
   template:
     metadata:
       labels:
-        app: yyzz_deploy
+        app: yyzz-cls-tornado
+    spec:
+      containers:
+      - name: yyzz-tornado # 容器名字
+        image: tornado:v1 # 镜像
+        imagePullPolicy: IfNotPresent
+        workingDir: /home   # 这里可以自定义工作目录路径
+        env:
+        - name: PYTHONPATH
+          value: "/home/"
+        # command: ["python","tornado/app.py"] # 指定启动时要运行的命令  
+        # args: [] # 指定命令的参数
+        command: ["/bin/bash"] # 使用bash shell  
+        args: ["-c", "while true; do echo Hello Kubernetes; sleep 1; done"] # 无限循环打印消息
+        ports:  
+        - containerPort: 9998  
+        volumeMounts:  
+        - name: app-data  
+          mountPath: /home/
+      volumes:  
+      - name: app-data  
+        hostPath:  
+          path: /home/qiangyu/cls/ # 替换为你想要挂载的宿主机路径
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yyzz-cls-triton
+spec:
+  selector:
+    app: yyzz-cls-triton
+  # 默认 ClusterIP 集群内可访问，NodePort 节点可访问，LoadBalancer 负载均衡模式（需要负载均衡器才可用）
+  type: NodePort
+  ports:
+    - port: 8000        # 本 Service 的端口
+      targetPort: 8000  # 容器端口
+      nodePort: 31800   # 节点端口，范围固定 30000 ~ 32767
+      name: grpc  # gRPC 端口来接收和处理来自客户端的推断请求
+    - port: 8001        # 本 Service 的端口
+      targetPort: 8001  # 容器端口
+      nodePort: 31801   # 节点端口，范围固定 30000 ~ 32767
+      name: rest # 这个端口用于与 Triton 服务的 REST API 进行通信。
+    - port: 8002        # 本 Service 的端口
+      targetPort: 8002  # 容器端口
+      nodePort: 31802   # 节点端口，范围固定 30000 ~ 32767
+      name: metrics # 这个端口用于收集和暴露 Triton 服务的各种指标，如推断请求的延迟、吞吐量、错误率等
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # 部署名字
+  name: yyzz-cls-triton-deploy
+spec:
+  replicas: 1
+  # 用来查找关联的 Pod，所有标签都匹配才行
+  selector:
+    matchLabels:
+      app: yyzz-cls-triton
+  # 定义 Pod 相关数据
+  template:
+    metadata:
+      labels:
+        app: yyzz-cls-triton
     spec:
       # 定义容器，可以多个
       containers:
@@ -21,21 +99,19 @@ spec:
         image: nvcr.io/nvidia/tritonserver:21.02-py3 # 镜像
         imagePullPolicy: IfNotPresent
         ports:  
-        - containerPort: 8000  
+        - containerPort: 8000
+          name: grpc  # gRPC 端口来接收和处理来自客户端的推断请求 
+        - containerPort: 8001
+          name: rest # 这个端口用于与 Triton 服务的 REST API 进行通信。
+        - containerPort: 8002
+          name: metrics # 这个端口用于收集和暴露 Triton 服务的各种指标，如推断请求的延迟、吞吐量、错误率等
+        command: ["tritonserver"] # 指定启动时要运行的命令  
+        args: ["--model-repository=/models"] # 指定命令的参数
         volumeMounts:  
-        - name: app-data  
-          mountPath: /home/qiangyu/cls/  
+        - name: app-model  
+          mountPath: /models
 
-      - name: yyzz-tornado # 容器名字
-        image: tornado:v1 # 镜像
-        imagePullPolicy: IfNotPresent
-        ports:  
-        - containerPort: 9998  
-        volumeMounts:  
-        - name: app-data  
-          mountPath: /home/qiangyu/cls/ 
-
-    volumes:  
-    - name: app-data  
-      hostPath:  
-        path: /home/qiangyu/cls/ # 替换为你想要挂载的宿主机路径
+      volumes:  
+      - name: app-model  
+        hostPath:  
+          path: /home/qiangyu/cls/model_repository/ # 替换为你想要挂载的宿主机路径

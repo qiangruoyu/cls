@@ -40,7 +40,7 @@ class async_clsHandler(tornado.web.RequestHandler):
 
     async def doing(self,img_base64_str):
         # await asyncio.sleep(10)
-        res = await async_cls_process(img_base64_str, model_name = "resnet_50",shape = (224,224),transforms=None,num_type="FP32",url='yyzh_triton:8000')
+        res = await async_cls_process(img_base64_str, model_name = "resnet_50",shape = (224,224),transforms=None,num_type="FP32",url="yyzz_cls_triton:8000")
         return res
         
 
